@@ -221,28 +221,7 @@ def validate(args, dataloader, model, epoch):
             epoch_iou += iou_dict
             epoch_loss_per_class += per_class_loss_dict
 
-            # Visualize predictions
-            # if epoch % args.val_interval * 4 == 0 and i % 50 == 0:
-            #     vis_img = ToPILImage()(image[0].detach().cpu())
-            #     pred_vis = pred_ms[1].detach().cpu()
-            #     label_vis = gt_ms[1]
-            #
-            #     # Visualize scores
-            #     vis_fig = visualize_score(
-            #         pred_vis[0],
-            #         label_vis[0],
-            #         grid2d[0],
-            #         vis_img,
-            #         iou_per_sample[0],
-            #         num_classes,
-            #     )
-            #     plt.savefig(
-            #         os.path.join(
-            #             args.savedir,
-            #             args.name,
-            #             "val_output_epoch{}_iter{}.png".format(epoch, i),
-            #         )
-            #     )
+            
 
     print("\n==> Validation epoch complete")
 
@@ -331,7 +310,7 @@ def visualize_score(scores, heatmaps, grid, image, iou, num_classes):
     )
     heatmaps, _ = heatmaps.max(dim=0)
 
-    # Visualize score
+    
     fig = plt.figure(num="score", figsize=(8, 6))
     fig.clear()
 
@@ -934,7 +913,7 @@ def main():
         # Run validation every N epochs
         if epoch % args.val_interval == 0:
             # Save model checkpoint
-            # save_checkpoint(args, epoch, model, optimizer, scheduler)
+            save_checkpoint(args, epoch, model, optimizer, scheduler)
             validate(args, val_loader, model, epoch)
 
         # Update and log learning rate
