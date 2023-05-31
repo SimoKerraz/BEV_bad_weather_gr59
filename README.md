@@ -19,6 +19,8 @@ mention that although this dataset might contain some visuals captured in rainy 
 they do not have weather tagging like other datasets such as BDD100k. The Nuscenes
 dataset is comprised of high-definition sensor data collected from a diverse set of urban
 driving scenarios in multiple cities worldwide. 
+
+
 We can see that rain data represents 20% of the whole dataset, whereas fog and snow
 camera pictures are nonexistent in the dataset. This leads us to speculate that a model
 trained on the Nuscenes dataset will not be able to generalize to cases of rainy conditions,
