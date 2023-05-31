@@ -1,0 +1,15 @@
+
+#!/bin/bash
+#SBATCH --chdir /scratch/izar/[username]
+#SBATCH --nodes 1
+#SBATCH --ntasks 1
+#SBATCH --cpus-per-task 1
+#SBATCH --mem 12G
+#SBATCH --partition gpu
+#SBATCH --gres gpu:1
+#SBATCH --qos dlav
+#SBATCH --account civil-459-2023
+#SBATCH --time 1:00:00
+
+
+python  train.py
