@@ -167,110 +167,7 @@ def train(args, dataloader, model, optimizer, epoch):
         )
 
 
-def validate(args, dataloader, model, epoch):
-    print("\n==> Validating on {} minibatches\n".format(len(dataloader)))
-    model.eval()
-    epoch_loss = MetricDict()
-    epoch_iou = MetricDict()
-    epoch_loss_per_class = MetricDict()
-    num_classes = len(args.pred_classes_nusc)
-    times = []
 
-    for i, ((image, calib, grid2d), (cls_map, vis_mask)) in enumerate(dataloader):
-        # Move tensors to GPU
-        image, calib, cls_map, vis_mask, grid2d = (
-            image.cuda(),
-            calib.cuda(),
-            cls_map.cuda(),
-            vis_mask.cuda(),
-            grid2d.cuda(),
-        )
-
-        with torch.no_grad():
-
-            # Run network forwards
-            pred_ms = model(image, calib, grid2d)
-
-            # Upsample largest prediction to 200x200
-            pred_200x200 = F.interpolate(
-                pred_ms[0], size=(200, 200), mode="bilinear"
-            )
-            # pred_200x200 = (pred_200x200 > 0).float()
-            pred_ms = [pred_200x200, *pred_ms]
-
-            # Get required gt output sizes
-            map_sizes = [pred.shape[-2:] for pred in pred_ms]
-
-            # Convert ground truth to binary mask
-            gt_s1 = (cls_map > 0).float()
-            vis_mask_s1 = (vis_mask > 0.5).float()
-
-            # Downsample to match model outputs
-            gt_ms = src.utils.downsample_gt(gt_s1, map_sizes)
-            vis_ms = src.utils.downsample_gt(vis_mask_s1, map_sizes)
-
-            # Compute IoU
-            iou_per_sample, iou_dict = src.utils.compute_multiscale_iou(
-                pred_ms, gt_ms, vis_ms, num_classes
-            )
-            # Compute per class loss for eval
-            per_class_loss_dict = src.utils.compute_multiscale_loss_per_class(
-                pred_ms, gt_ms,
-            )
-
-            epoch_iou += iou_dict
-            epoch_loss_per_class += per_class_loss_dict
-
-            
-
-    print("\n==> Validation epoch complete")
-
-    # Calculate per class IoUs over set
-    scales = [pred.shape[-1] for pred in pred_ms]
-
-    ms_cumsum_iou_per_class = torch.stack(
-        [epoch_iou["s{}_iou_per_class".format(scale)] for scale in scales]
-    )
-    ms_count_per_class = torch.stack(
-        [epoch_iou["s{}_class_count".format(scale)] for scale in scales]
-    )
-
-    ms_ious_per_class = (
-        (ms_cumsum_iou_per_class / (ms_count_per_class + 1e-6)).cpu().numpy()
-    )
-    ms_mean_iou = ms_ious_per_class.mean(axis=1)
-
-    # Calculate per class loss over set
-    ms_cumsum_loss_per_class = torch.stack(
-        [epoch_loss_per_class["s{}_loss_per_class".format(scale)] for scale in scales]
-    )
-    ms_loss_per_class = (
-        (ms_cumsum_loss_per_class / (ms_count_per_class + 1)).cpu().numpy()
-    )
-    total_loss = ms_loss_per_class.mean(axis=1).sum()
-
-    with open(os.path.join(args.savedir, args.name, "val_loss.txt"), "a") as f:
-        f.write("\n")
-        f.write(
-            "{},".format(epoch)
-            + "{},".format(float(total_loss))
-            + "".join("{},".format(v) for v in ms_mean_iou)
-        )
-
-    with open(os.path.join(args.savedir, args.name, "val_ious.txt"), "a") as f:
-        f.write("\n")
-        f.write(
-            "Epoch: {},\n".format(epoch)
-            + "Total Loss: {},\n".format(float(total_loss))
-            + "".join(
-                "s{}_ious_per_class: {}, \n".format(s, v)
-                for s, v in zip(scales, ms_ious_per_class)
-            )
-            + "".join(
-                "s{}_loss_per_class: {}, \n".format(s, v)
-                for s, v in zip(scales, ms_loss_per_class)
-            )
-        )
 
 
 def compute_loss(preds, labels, loss_name, args):
@@ -298,60 +195,7 @@ def compute_loss(preds, labels, loss_name, args):
     return total_loss, total_loss_dict
 
 
-def visualize_score(scores, heatmaps, grid, image, iou, num_classes):
-    # Condese scores and ground truths to single map
-    class_idx = torch.arange(len(scores)) + 1
-    logits = scores.clone().cpu() * class_idx.view(-1, 1, 1)
-    logits, _ = logits.max(dim=0)
-    scores = (scores.detach().clone().cpu() > 0.5).float() * class_idx.view(-1, 1, 1)
-    scores, _ = scores.max(dim=0)
-    heatmaps = (heatmaps.detach().clone().cpu() > 0.5).float() * class_idx.view(
-        -1, 1, 1
-    )
-    heatmaps, _ = heatmaps.max(dim=0)
 
-    
-    fig = plt.figure(num="score", figsize=(8, 6))
-    fig.clear()
-
-    gs = mpl.gridspec.GridSpec(2, 3, figure=fig)
-    ax1 = fig.add_subplot(gs[0, :])
-    ax2 = fig.add_subplot(gs[1, 0])
-    ax3 = fig.add_subplot(gs[1:, 1])
-    ax4 = fig.add_subplot(gs[1:, 2])
-
-    image = ax1.imshow(image)
-    ax1.grid(which="both")
-    src.visualization.encoded.vis_score_raw(logits, grid, cmap="magma", ax=ax2)
-    src.vis_score(scores, grid, cmap="magma", ax=ax3, num_classes=num_classes)
-    src.vis_score(heatmaps, grid, cmap="magma", ax=ax4, num_classes=num_classes)
-
-    grid = grid.cpu().detach().numpy()
-    yrange = np.arange(grid[:, 0].max(), step=5)
-    xrange = np.arange(start=grid[0, :].min(), stop=grid[0, :].max(), step=5)
-    ymin, ymax = 0, grid[:, 0].max()
-    xmin, xmax = grid[0, :].min(), grid[0, :].max()
-
-    ax2.vlines(xrange, ymin, ymax, color="white", linewidth=0.5)
-    ax2.hlines(yrange, xmin, xmax, color="white", linewidth=0.5)
-    ax3.vlines(xrange, ymin, ymax, color="white", linewidth=0.5)
-    ax3.hlines(yrange, xmin, xmax, color="white", linewidth=0.5)
-    ax4.vlines(xrange, ymin, ymax, color="white", linewidth=0.5)
-    ax4.hlines(yrange, xmin, xmax, color="white", linewidth=0.5)
-
-    ax1.set_title("Input image", size=11)
-    ax2.set_title("Model output logits", size=11)
-    ax3.set_title("Model prediction = logits" + r"$ > 0.5$", size=11)
-    ax4.set_title("Ground truth", size=11)
-
-    # plt.suptitle(
-    #     "IoU : {:.2f}".format(iou), size=14,
-    # )
-
-    gs.tight_layout(fig)
-    gs.update(top=0.9)
-
-    return fig
 
 
 def parse_args():
@@ -791,18 +635,7 @@ def main():
         mini=True,
         gt_out_size=(100, 100),
     )
-    print("loading val data")
-    val_data = nuScenesMaps(
-        root=args.root,
-        split=args.val_split,
-        grid_size=args.grid_size,
-        grid_res=args.grid_res,
-        classes=args.load_classes_nusc,
-        dataset_size=args.data_size,
-        desired_image_size=args.desired_image_size,
-        mini=True,
-        gt_out_size=(200, 200),
-    )
+    
 
     # Create dataloaders
     train_loader = DataLoader(
@@ -813,14 +646,7 @@ def main():
         collate_fn=src.data.collate_funcs.collate_nusc_s,
         drop_last=True,
     )
-    val_loader = DataLoader(
-        val_data,
-        batch_size=args.batch_size,
-        shuffle=False,
-        num_workers=1,
-        collate_fn=src.data.collate_funcs.collate_nusc_s,
-        drop_last=True,
-    )
+   
 
     # Build model
     model = networks.__dict__[args.model_name](
@@ -914,7 +740,6 @@ def main():
         if epoch % args.val_interval == 0:
             # Save model checkpoint
             save_checkpoint(args, epoch, model, optimizer, scheduler)
-            validate(args, val_loader, model, epoch)
 
         # Update and log learning rate
         scheduler.step()
