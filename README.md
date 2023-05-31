@@ -35,14 +35,16 @@ clear or cloudy conditions.
 # Data download
 In order to get the mini Nuscenes data set : 
 ```
-mkdir -p /data/sets/nuscenes  # Make the directory to store the nuScenes dataset in.
+mkdir -p /data/nuscenes  # Make the directory to store the nuScenes dataset in.
 
 wget https://www.nuscenes.org/data/v1.0-mini.tgz  # Download the nuScenes mini split.
 
 tar -xf v1.0-mini.tgz -C /data/sets/nuscenes  # Uncompress the nuScenes mini split.
 
 pip install nuscenes-devkit &> /dev/null  # Install nuScenes.
+
 ```
+ 
 
 # Setup 
 In order to get the code running, Python 3.7 should be used. The following packages are needed also : 
@@ -62,7 +64,7 @@ You will need then to clone the repository of the original github of the paper :
 
 
 ```
-
+cd /translating-images-into-maps 
 git clone https://github.com/avishkarsaha/translating-images-into-maps.git
 
 ```
@@ -77,11 +79,21 @@ Pretrained models and their configs required to load/train them can be downloade
 https://www.icloud.com/iclouddrive/0aaSjW59DEqgUDKyy1uw0iSVg#nuscenes%5Fdata
 
 ```
+# Training 
+ 
+To train the model we do as follows : 
+```
+python train.py
 
-# Training the model 
+```
+# Validation 
 
+In orther to validate the model : 
+```
+python validate.py
 
-# Evaluation of the model 
+```
+
 
 # Contribution 
 ## Overview 
@@ -162,9 +174,10 @@ Output will be located in data/output/nuscene
 Now that we have augmented our data, we will need to add the current data to the original one in the same folder and structure and retrain the model. 
 
 To do that : 
+
  * We can either do it locally : 
     ```
-    
+ 
     python train.py 
     
     ```
