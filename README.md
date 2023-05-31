@@ -20,6 +20,7 @@ they do not have weather tagging like other datasets such as BDD100k. The Nuscen
 dataset is comprised of high-definition sensor data collected from a diverse set of urban
 driving scenarios in multiple cities worldwide. 
 
+![alt text](https://github.com/SimoKerraz/BEV_bad_weather_gr59/blob/main/afterRain.png)
 
 We can see that rain data represents 20% of the whole dataset, whereas fog and snow
 camera pictures are nonexistent in the dataset. This leads us to speculate that a model
@@ -27,6 +28,8 @@ trained on the Nuscenes dataset will not be able to generalize to cases of rainy
 and will definitely perform poorly on fog and snow datasets. It is also worth noting that
 several images in the data set are wrongly tagged as rainy weather when they actually show
 clear or cloudy conditions.
+ 
+![alt text](https://github.com/SimoKerraz/BEV_bad_weather_gr59/blob/main/Rplot.jpeg)
 
 
 # Data download
@@ -67,7 +70,13 @@ git clone https://github.com/avishkarsaha/translating-images-into-maps.git
 
 
 
+# Pretrained model
 
+Pretrained models and their configs required to load/train them can be downloaded from here:
+```
+https://www.icloud.com/iclouddrive/0aaSjW59DEqgUDKyy1uw0iSVg#nuscenes%5Fdata
+
+```
 
 
 
