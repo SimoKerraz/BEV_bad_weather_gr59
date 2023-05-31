@@ -159,6 +159,22 @@ python main.py --dataset nuscene --intensity 25 --frame_end 10
 
 Output will be located in data/output/nuscene
 
+Now that we have augmented our data, we will need to add the current data to the original one in the same folder and structure and retrain the model. 
+
+To do that : 
+ * We can either do it locally : 
+    ```
+    
+    python train.py 
+    
+    ```
+ * On scitas using : 
+    ```
+    
+    sbatch 
+ 
+ 
+
 
 
 
