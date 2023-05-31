@@ -32,6 +32,8 @@ clear or cloudy conditions.
 ![alt text](https://github.com/SimoKerraz/BEV_bad_weather_gr59/blob/main/Rplot.jpeg)
 
 
+Please refer to DLAV.pdf for an extensive motivation and overview exploration on the data. 
+
 # Data download
 In order to get the mini Nuscenes data set : 
 ```
