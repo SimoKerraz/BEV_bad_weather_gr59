@@ -170,10 +170,10 @@ To do that :
     ```
  * On scitas using : 
     ```
+    sbatch Trainscript
+ 
+    ```
     
-    sbatch 
- 
- 
 
 
 
