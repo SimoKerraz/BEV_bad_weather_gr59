@@ -49,13 +49,13 @@ In order to get the code running, Python 3.7 should be used. The following packa
 
 ```
 pytorch
-cv2
 numpy
 pickle
 pyquaternion
 shapely
 lmdb
-
+OpenCV 3.2.0
+PyClipper 1.0.6
 ```
 
 You will need then to clone the repository of the original github of the paper : 
@@ -78,20 +78,86 @@ https://www.icloud.com/iclouddrive/0aaSjW59DEqgUDKyy1uw0iSVg#nuscenes%5Fdata
 
 ```
 
+# Training the model 
 
 
+# Evaluation of the model 
 
+# Contribution 
+## Overview 
 
+In a first step, the existing and pre-trained model presented in the paper X should be tested
+on the Nuscenes dataset and the stated accuracies verified and confirmed. The next step
+would be filtering out the data collected in rainy (and foggy and snowy) conditions, to com-
+pare the performance of the model in those situations. Moreover, the entire dataset, or at
+least a part of the data collected in good weather conditions, augmented with generated
+droplets on the images would be tested and evaluated on the original model; in the aim to
+analyze the data augmentation method and it’s impact on the performance. Here again,
+the two evaluations on the original dataset, with and without filtering out good weather
+conditions, serves as a comparison metric to understand the effectiveness of the data aug-
+mentation.
 
+The second step would be to re-train the given model, using the augmented dataset which
+should heavily represent adverse weather conditions. The resulting model should again be
+evaluated with the original dataset, with and without filtering out good weather conditions
 
+## Data Augmentation
 
+We use the [Rain Rendering for Evaluating and Improving Robustness to Bad Weather](https://arxiv.org/abs/2009.03683) paper to augment clear weather images with controllable amount of rain. 
 
+![alt text](https://github.com/SimoKerraz/BEV_bad_weather_gr59/blob/main/Rendering.png)
 
+For that we will need to 
 
+ ### Setup
+Create your conda virtual environment:
 
+```
+conda create --name py36_weatheraugment python=3.6 opencv numpy matplotlib tqdm imageio pillow natsort glob2 scipy scikit-learn scikit-image pexpect -y
 
+conda activate py36_weatheraugment
 
+pip install pyclipper imutils
 
+```
+
+### Running the code
+The renderer augment sequences of images with rain, using the following required data:
+
+* images
+* depth maps
+* calibration files (optional, KITTI format)
+ 
+The structure has to be as follows : 
+```
+data/source/DATASET/SEQUENCE/rgb/file0001.png           # Source images (color, 8 bits)
+data/source/DATASET/SEQUENCE/depth/file0001.png         # Depth images (16 bits, with depth_in_meter = depth/256.)
+```
+
+Upon success, the renderer will output:
+```
+data/output/DATASET/SEQUENCE/rain/10mm/rainy_image/file0001.png     # Rainy images (here, 10mm/hr rain)
+data/output/DATASET/SEQUENCE/rain/10mm/rainy_mask/file0001.png      # Rainy masks (int32 showing rain drops opacity, useful for rain detection/removal works) 
+data/output/DATASET/SEQUENCE/envmap/file0001.png       
+
+```
+
+We then clone the following github : 
+
+```
+git clone https://github.com/astra-vision/rain-rendering.git
+```
+
+### Running
+
+Once data and config are prepared, you may run the rendering with:
+
+```
+python main.py --dataset nuscene --intensity 25 --frame_end 10 
+
+```
+
+Output will be located in data/output/nuscene
 
 
 
