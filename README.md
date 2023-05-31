@@ -85,14 +85,14 @@ https://www.icloud.com/iclouddrive/0aaSjW59DEqgUDKyy1uw0iSVg#nuscenes%5Fdata
  
 To train the model we do as follows : 
 ```
-python train.py
+python train1.py
 
 ```
 # Validation 
 
 In orther to validate the model : 
 ```
-python validate.py
+python validate1.py
 
 ```
 
@@ -180,7 +180,7 @@ To do that :
  * We can either do it locally : 
     ```
  
-    python train.py 
+    python train1.py 
     
     ```
  * On scitas using : 
