@@ -25,14 +25,10 @@ def check_arg(args):
                         default=os.path.join('data', 'source'),
                         required=False)
 
-    # only for nuscenes (temporarily deactivated)
-    # only for nuscenes and nuscenes_gan
-    # parser.add_argument('--json_file', help='token files in json for nuscenes', required=False)
-    #
-    # parser.add_argument('-g', '--gan_root',
-    #                     help='Path to modified gan database root',
-    #                     default=os.path.join('data', 'gan'),
-    #                     required=False)
+    
+    parser.add_argument('--json_file', help='token files in json for nuscenes', required=False)
+   
+  
     parser.add_argument('-p', '--post_fix',
                         help='Post fix added at the end of the modified gan file (ex.: "fake_B")',
                         default="", type=str, required=False)
